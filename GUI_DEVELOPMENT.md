@@ -771,6 +771,53 @@ required. Invalid debug preferences are blocked before Start/action confirmation
 Dependency checks, trace ignore-rule verification and `git diff --check` passed;
 original-file diffs against the audited baseline remain empty.
 
+## Native-lock policy parity and atomic GUI ownership
+
+Added **Settings → Connection → Require successful native instance locking**,
+backed by the original `[PrimeNet] require_lock` and CLI `--lock` / `--no-lock`
+policy. Blank/True stays strict. False still attempts native locks, refuses
+`EAGAIN`/`EACCES` live-owner failures and permits other native-lock acquisition
+errors, matching the audited original startup. Lock-file open failures, symbolic
+links and non-regular native lock paths remain fatal. Configuration saves use
+the explicitly selected candidate policy; server actions use saved policy.
+
+A mandatory `.gui-runner.guard` now coordinates all GUI monitoring/actions/saves
+in addition to existing native locks. It is exclusively created with private
+permissions, stores host/PID/random token, and lasts for the operation's ownership
+scope. Cleanup checks the original inode and exact token contents after closing
+the writer, avoiding timestamp assumptions that differ on Windows. Existing,
+stale, modified or replaced guards are not automatically deleted. Failed metadata
+initialization cleans only the newly created inode. The documentation explains
+manual stale-guard inspection and that an exited supervisor PID does not prove
+its draining child has finished. The guard is ignored by Git.
+
+Existing Save/Start/action confirmations explain optional native locking and the
+need to exclude independent CLI instances manually when locking is unavailable.
+Ready events report unverified native preflight locking without raw OS errors.
+Known live owners remain refused in every mode. Original per-work `.lck` locks
+are unchanged; atomic file creation must still work. Reserved native/GUI lock
+names cannot be configuration, work, results, log or archive targets.
+
+Automated checks simulate unsupported native locking, known live-owner errors,
+strict/optional save paths, guard exclusivity/private metadata, stale and symlink
+refusal, replacement protection, changed-timestamp cleanup, FIFO refusal and
+metadata-write failure cleanup. A real supervisor with simulated unavailable
+native locks reports unverified ownership, blocks a second GUI runner and blocks
+a save from a native-lock-capable process. Original startup in both native and
+registration adapters honors saved strict/optional policies under simulated
+native failures with sockets blocked. Desktop checks cover reference navigation,
+saved policy and existing confirmation text. All 94 ordinary parser entries now
+have graphical controls/operations; hidden experimental Prime95 remains excluded
+and legacy account-password authentication remains removed upstream. Inventory
+coverage is not release/platform/live-service acceptance. No original upstream
+files or dependencies changed, and no live server requests were performed.
+
+Final automated verification: **166 tests passed**, including **26 desktop
+tests** and native macOS filesystem-event integration, on Python 3.15.1/Tk 9.1.
+Dependency checks, guard ignore-rule verification and `git diff --check` passed.
+Original-file diffs against the audited baseline remain empty. Real unsupported
+filesystems, other platforms and manual/live-service acceptance remain deferred.
+
 ## Original-file changes
 
 None. All GUI work so far is in newly added files. Existing upstream source,
