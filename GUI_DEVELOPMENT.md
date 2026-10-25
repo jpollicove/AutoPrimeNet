@@ -272,6 +272,32 @@ risks and scheduled-mode limitations are documented in GUI.md. The next work is
 complete graphical operation coverage, immediate-watch lifecycle and safe live
 validation after review; this milestone does not establish full parity.
 
+## Milestone: advanced assignment configuration
+
+Added ten graphical settings for trial-factoring bit limits and target bits,
+P−1 tests saved/retry multiplier/optimal bounds, ECM bounds/curve limits, and
+LL/PRP conversion directions. Existing exponent and certification controls now
+share a scrollable Advanced dialog. Dialog edits are staged separately: Cancel
+discards them, Apply updates the main form, and Save uses the existing offline
+backend and atomic persistence path. Applying while monitoring or local work is
+active is refused. Mutually exclusive conversions are rejected in the dialog
+and again by the original backend at save time. No new ranges beyond the
+original backend's rules were imposed on the added numeric options.
+
+The CLI reference maps all current configuration fields to their tab and label,
+searches those labels, and supports double-click/Return navigation. Mapped
+advanced rows open and focus the relevant control; unmapped entries remain
+reference-only. This does not establish complete CLI parity.
+
+Validated October 25, 2026 on macOS/Python 3.15.1/Tk 9.1.0: **62 tests passed**,
+including nine desktop tests. Added tests round-trip the new settings through
+the real offline backend, verify conflicting/invalid settings cannot alter the
+file or create backups, and exercise dialog cancellation, application, reference
+navigation and saving. All server cycles remain simulated or network-blocked.
+No live assignments were changed and no original upstream files were edited.
+Other platforms remain untested. Notifications, full operation coverage and
+immediate-watch lifecycle remain future milestones.
+
 ## Original-file changes
 
 None. All GUI work so far is in newly added files. Existing upstream source,
