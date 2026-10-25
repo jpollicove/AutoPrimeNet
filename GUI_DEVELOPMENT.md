@@ -634,6 +634,45 @@ files. Final verification on macOS/Python 3.15.1/Tk 9.1: **129 tests passed**,
 including **21 desktop tests**. Dependency checks and `git diff --check` passed.
 No live service requests or assignment changes were performed.
 
+## Reviewed SMTP-provider discovery
+
+Added **Notifications → Discover SMTP provider** with a sender-address field,
+network confirmation, provider/security/SMTP/username review, and explicit Apply
+to form. Save remains separate. Passwords, recipients, notification send policy,
+and the separate test-email operation are unchanged. Edited addresses/workspaces
+invalidate results; closed dialogs discard late completions. No-match and failed
+lookups retain manual editing, and raw helper errors never appear in the dialog.
+
+A separate private helper reuses the audited original `email_autoconfig`, XML
+parser, MX/SRV fallback and proxy initialization. It does not execute CLI startup,
+main, setup, SMTP sending or PrimeNet operations. Saved config fingerprints are
+checked before and after lookup. Requests use saved proxy settings and the normal
+Requests environment, eight-second per-request timeouts and a 90-second parent
+limit. Sender/configuration inputs travel through stdin. The offline bridge
+continues to reject this operation and retains its socket audit guard.
+
+Provider data is checked for valid ports, single-line descriptions and supported
+security modes. Unknown security is rejected. Explicit plain SMTP is displayed
+with both TLS options disabled; a missing username retains the old value. The
+confirmation and review explain original HTTP and unsigned-DNS fallback behavior.
+No dependencies or original upstream files changed.
+
+Automated coverage includes real original XML discovery with simulated HTTP,
+original DNS SRV selection with simulated DNS responses, saved proxy credentials,
+no-match/stale-config handling, invalid data and IPC, bounded parent timeout,
+confirmation refusal, staged apply, recipient/password/send-policy preservation,
+address invalidation, errors and cancellation. No live provider, SMTP or PrimeNet
+requests were performed. Manual acceptance remains deferred at the user's request
+until implementation is ready, with tests planned across their available machines.
+Setup is now classified Available in the 96-entry inventory, with live and platform
+acceptance still pending. Native watching/separate polling, lock bypass and verbose
+HTTP tracing remain the outstanding runtime gaps.
+
+Final automated verification: **139 tests passed**, including **23 desktop
+tests**, on macOS/Python 3.15.1/Tk 9.1. Dependency checks and `git diff --check`
+passed. Manual and live-service testing remain pending. Quit during a bounded
+lookup asks the user to retry after it finishes, matching existing job handling.
+
 ## Original-file changes
 
 None. All GUI work so far is in newly added files. Existing upstream source,
