@@ -298,6 +298,36 @@ No live assignments were changed and no original upstream files were edited.
 Other platforms remain untested. Notifications, full operation coverage and
 immediate-watch lifecycle remain future milestones.
 
+## Milestone: local notification configuration
+
+Added Notifications forms for send enablement, From address, recipients, SMTP
+server, SMTP username, SSL/TLS and StartTLS. Field metadata now identifies its
+INI section and option independently of the form key, so `[Email] username`
+cannot collide with `[PrimeNet] username`. Existing field mappings still use
+the same PrimeNet keys. CLI reference navigation includes the new mapped flags.
+
+Save remains an offline, validated configuration operation. Changed recipient
+lists normalize comma separators and surrounding spaces; unchanged values retain
+their original formatting. SSL/TLS and StartTLS cannot both be enabled. The
+backend checks email syntax, server scheme and required sender/server fields.
+Send enablement uses the original backend's `[Email] send` flag; it does not
+introduce a separate notification implementation. Blank boolean fields remove
+explicit overrides and retain existing INI/backend inheritance semantics.
+
+Validated October 25, 2026 on macOS/Python 3.15.1/Tk 9.1.0: **66 tests passed**,
+including ten desktop tests. New coverage checks cross-section identity,
+recipient normalization, TLS conflicts, invalid address/server rejection,
+disable/reset behavior, preservation of plaintext and real upstream-encrypted
+SMTP credentials, GUI save/reload and reference navigation. No SMTP message,
+server discovery or live PrimeNet cycle was performed. No original upstream
+files changed, and no dependencies were added.
+
+Password editing, test-message sending, automatic SMTP discovery and per-event
+notification controls remain unfinished. Saving other notification fields does
+not encrypt plaintext passwords or replace the password for a changed SMTP
+account. Those limits are documented in GUI.md. Full operation coverage,
+immediate-watch lifecycle and other-platform validation remain future work.
+
 ## Original-file changes
 
 None. All GUI work so far is in newly added files. Existing upstream source,
