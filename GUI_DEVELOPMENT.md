@@ -3,8 +3,9 @@
 This document records development evidence for the optional Python 3.15.0-or-later
 GUI. See [GUI.md](GUI.md) for environment requirements and the agreed behavior.
 The complete GUI is not available yet; the desktop foundation now includes local
-configuration forms, validated persistence, scheduled monitoring process control,
-and read-only previews. Live PrimeNet monitoring remains unvalidated.
+configuration forms, encrypted password replacement, validated persistence,
+scheduled monitoring process control and read-only previews. Live PrimeNet
+monitoring remains unvalidated.
 
 ## Milestone: environment and offline backend prototype
 
@@ -49,6 +50,11 @@ It currently supports only:
   configuration text in memory, reuses decryption and `check_options()`, and
   returns only non-secret effective settings. It does not write configuration,
   acquire locks, run prompted setup, register the computer or enter the scheduler.
+- `protect_credentials`: validates configuration offline and strictly encrypts
+  explicit SMTP/proxy password replacements using the original backend. Returns
+  only selected ciphertext and the hardware GUID needed to retain its binding.
+  It does not write files; the existing save layer patches and validates the
+  result before atomic replacement.
 
 The source SHA-256 must exactly match the reviewed backend. Source drift fails
 closed before execution. An update to that guard requires a new integration
@@ -360,6 +366,51 @@ registration, credential editing, selective server operations, immediate-watch
 lifecycle and other-platform validation remain unfinished. GUI.md documents
 units, detected/default behavior and the distinction between reported resource
 settings and actual computation-program configuration.
+
+## Milestone: connection settings and encrypted password management
+
+Added proxy type/server/username and backend encryption policy in a Connection
+dialog under Settings. Added masked SMTP/proxy password management under Settings
+and Notifications, with CLI reference navigation for the corresponding flags.
+Keep preserves pending edits, Replace stages a new secret, Remove stages deletion
+of plaintext and encrypted entries, and Use saved cancels a pending change.
+Cancel discards only that dialog's new edits. No saved password is loaded into
+an entry; entries are cleared on Apply/Cancel. Successful Save or workspace
+reload clears pending replacements. The removed legacy account-password feature
+is intentionally not implemented.
+
+The new offline `protect_credentials` operation reuses the original `encrypt()`
+with strict encryption and limits its working mapping to explicitly replaced
+passwords. Selected entries are removed from a private candidate before
+preflight, allowing a damaged selected credential to be removed without first
+decrypting it. No plaintext fallback is allowed. The existing atomic save layer
+patches only returned ciphertext and any newly needed hardware GUID, then uses a
+fresh offline validation process to decrypt/check the final candidate before
+writing. Existing hardware GUIDs cannot change through this path; unrelated
+ciphertext is retained byte-for-byte. Passwords inherited from DEFAULT are
+refused for explicit adjustment outside the GUI.
+
+Secrets travel to the private backend on stdin, not command-line arguments.
+Backend diagnostics are suppressed and encryption errors are sanitized. Pending
+values remain in GUI/worker memory until saved or discarded; this is not an
+OS credential-store integration. Existing plaintext credentials are preserved
+unless explicitly replaced or removed. Backups retain the previous file,
+including any old plaintext passwords, with private backup permissions.
+
+Validated October 25, 2026 on macOS/Python 3.15.1/Tk 9.1.0: **79 tests passed**,
+including thirteen desktop tests. Coverage includes exact decryption of spaces
+and percent signs, no secrets in argv/activity/errors, preservation of other
+ciphertext and GUIDs, removal of damaged entries, disabled/unavailable encryption,
+simulated native encryption failure, no-op proxy spelling preservation, dialog
+Cancel/Keep/Replace/Remove/Use saved, connection settings and GUI encrypted saves.
+No SMTP, proxy authentication or live PrimeNet operation was performed. Original
+upstream files remain unchanged and no packages were added. OpenSSL libcrypto
+availability is now documented as required for password replacement or reading
+existing encrypted credentials; SOCKS remains an optional Requests extra.
+
+Test-message sending, automatic SMTP discovery, per-event notification controls,
+standalone registration, selective server operations, immediate-watch lifecycle
+and other-platform runtime testing remain unfinished.
 
 ## Original-file changes
 
