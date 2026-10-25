@@ -729,6 +729,48 @@ and the native macOS FSEvents integration test, on Python 3.15.1/Tk 9.1.
 Dependency checks and `git diff --check` passed. Original-file diffs against
 the audited baseline remain empty.
 
+## Debug verbosity and bounded private HTTP/SMTP tracing
+
+Added typed `[GUI] DebugLevel` (0–3) under monitoring/output preferences and CLI
+reference navigation for `--debug`. Original repeated debug flags apply to every
+owned one-shot/one-pass child, native scheduler and graphical registration child.
+Level 1 enables the original native debug log; levels 2–3 additionally preserve
+raw console/HTTP/SMTP output in a separate `.gui-backend-trace-*.log`. These files
+are now ignored by Git. Original upstream files and dependencies are unchanged.
+
+Trace files are exclusively created with private temporary-file permissions.
+Dedicated capture threads drain raw output, cap storage at 8 MiB including a
+limit marker, discard excess while continuing to drain, and flush captured chunks
+for live viewing. Capture errors do not stop backend writes/uploads. The native
+runtime's JSON event stdout stays separate from stderr/raw trace output; ordinary
+CLI stdout/stderr are captured together. Only a generated filename and generic
+capture warning are sent to GUI activity. Raw contents remain in the private file.
+The original backend log has its own unchanged upstream rotation/permissions.
+
+Existing Start/operation confirmations include the credential/message-body
+implications when tracing is enabled. Logs & Status offers a latest-trace viewer
+using the same bounded non-symlink file reader as native logs. Opening native logs
+and traces switches the private view rather than copying data to GUI activity or
+diagnostic reports. The trace viewer reads only the latest regular matching file;
+older traces remain accessible with local editors. Retention is manual.
+
+Automated coverage checks all verbosity levels and offline validation, original
+HTTP debug startup in both source-executing adapters with sockets blocked, exact
+CLI flags, channel separation, the capture size cap and continued draining of a
+large simulated output stream, write-error behavior, private file permissions,
+latest-file selection and symlink avoidance, confirmation text, saved controls,
+reference navigation, private viewer switching and activity isolation. No live
+HTTP/SMTP tracing or PrimeNet/provider requests were performed. Manual/live and
+other-platform acceptance remain deferred. Lock bypass is the remaining explicit
+CLI runtime difference; the GUI still requires exclusive native instance leases.
+
+Final automated verification: **156 tests passed**, including **25 desktop
+tests** and the native macOS FSEvents check, on Python 3.15.1/Tk 9.1. Desktop
+Save confirmations are explicitly answered by test mocks, with no user input
+required. Invalid debug preferences are blocked before Start/action confirmation.
+Dependency checks, trace ignore-rule verification and `git diff --check` passed;
+original-file diffs against the audited baseline remain empty.
+
 ## Original-file changes
 
 None. All GUI work so far is in newly added files. Existing upstream source,
