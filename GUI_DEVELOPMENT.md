@@ -818,6 +818,53 @@ Dependency checks, guard ignore-rule verification and `git diff --check` passed.
 Original-file diffs against the audited baseline remain empty. Real unsupported
 filesystems, other platforms and manual/live-service acceptance remain deferred.
 
+## Optional GTK tray integration and resilient helper retries
+
+Linux/FreeBSD now attempt menu-capable GTK 3/AppIndicator tray integration in the
+existing private native helper, without importing GTK into the Tk GUI process.
+Optional requirements-gui-tray-gtk.txt installs PyGObject plus the existing tray
+packages; GUI.md separates venv packages from native GTK 3/GObject/Cairo/build
+prerequisites and desktop tray/extension requirements, with primary documentation
+links. Base GUI use remains independent of GTK. No packages were installed on
+the macOS development host for this change, and original upstream files remain
+unchanged.
+
+Automatic backend choice prefers AppIndicator when its local session bus reports
+a registered StatusNotifier visualization host, otherwise GTK legacy embedding.
+Missing AppIndicator typelibs can fall back to GTK; explicit PYSTRAY_BACKEND is
+respected. Menu-less backends are refused. GTK readiness checks StatusIcon
+embedding; AppIndicator checks IsStatusNotifierHostRegistered with a bounded,
+non-autostarting D-Bus property request, not just existence of a watcher service.
+The helper gives initial embedding five seconds and checks established hosts
+every two seconds. Host loss stops the helper so the GUI restores a hidden
+window and retains taskbar/Dock fallback. These checks cannot prove desktop
+visibility when a user's panel configuration intentionally hides an icon.
+
+Settings offers Retry tray integration without restarting monitoring. The GUI
+also stops/reaps startup attempts that exceed 15 seconds. Tray events include
+attempt generations, so stale readiness/menu/failure events do not affect a
+replacement helper. Readers and reapers capture the exact old process rather
+than dereferencing a mutable current handle; stop is idempotent. GTK operations
+are dispatched through its main loop, with the existing macOS AppHelper dispatch
+retained. The control reader uses unbuffered binary input to avoid a blocked
+stdin buffer during host-loss interpreter shutdown.
+
+Automated coverage simulates GTK and local D-Bus host states, typelib fallback,
+explicit backend policy, menu capability, embedding timeout and later host loss.
+The actual helper main-loop/control path exits cleanly in a simulated GTK child
+while its parent input remains open. Tests verify Linux controller dispatch,
+old-reader/reaper process isolation, stale-generation rejection, retry/no-duplicate
+behavior, hidden-window restoration and startup timeout reaping. Native macOS
+tray tests continue to run. These are not evidence of actual Linux/FreeBSD
+libraries, Wayland/X11/panel integration or physical desktop acceptance; those
+remain deferred along with live-service and user manual testing.
+
+Final automated verification: **175 tests passed**, including **28 desktop
+tests**, native macOS tray checks and filesystem-event integration, on Python
+3.15.1/Tk 9.1. Dependency checks and `git diff --check` passed. Original-file diffs
+against the audited baseline remain empty. No PrimeNet/provider/SMTP requests or
+assignment changes were performed.
+
 ## Original-file changes
 
 None. All GUI work so far is in newly added files. Existing upstream source,
