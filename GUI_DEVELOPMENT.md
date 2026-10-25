@@ -608,6 +608,32 @@ GPU/SMTP discovery, live validation and other-platform runtime testing remain
 open. See GUI_PARITY.md for exact coverage rather than treating this as release
 completion.
 
+## Local GPU discovery and reviewed hardware selection
+
+Added **PrimeNet → hardware settings → Detect GPUs** using the original
+`get_gpus` implementation in the existing network-blocked, hash-guarded helper.
+OpenCL, CUDA and NVML remain native driver capabilities; no Python dependencies
+were added. The picker shows device/source and proposed settings before applying
+them to the staged hardware dialog. Applying the dialog and saving remain
+separate, so discovery and cancellation do not write configuration or contact
+PrimeNet. Duplicate devices remain distinguishable by discovery source/index.
+
+The mapping follows original setup, including its 90% stage 2 memory estimate,
+conditional core/thread and cache overrides, and original MiB/KiB/MHz units.
+Unknown cores/caches retain existing settings. Unusable records are omitted;
+empty results and driver failures leave manual editing available. Results for a
+closed/replaced dialog are ignored. Detailed helper errors are not shown in
+message boxes. SMTP discovery and native watching remain pending, as recorded in
+GUI_PARITY.md.
+
+Validation covers complete and missing GPU measurements, rejected malformed
+records, reuse of original discovery, helper-session cleanup, real local discovery
+with networking blocked, staged selection, cancellation, driver errors, empty
+results, and late-result isolation. The actual discovery probe created no runtime
+files. Final verification on macOS/Python 3.15.1/Tk 9.1: **129 tests passed**,
+including **21 desktop tests**. Dependency checks and `git diff --check` passed.
+No live service requests or assignment changes were performed.
+
 ## Original-file changes
 
 None. All GUI work so far is in newly added files. Existing upstream source,
