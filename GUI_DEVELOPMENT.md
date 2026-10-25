@@ -449,6 +449,60 @@ Live command validation, experimental v6 ping, full debugging reports,
 standalone registration, assignment recovery/unreservation, exponent registration,
 immediate-watch lifecycle and other-platform runtime testing remain unfinished.
 
+## Milestone: assignment management and private work snapshots
+
+Added graphical pause/resume of new-work requests, recovery/recover-all,
+single-exponent unreservation and unreserve-all. They reuse the allowlisted
+one-shot runner and original CLI functions. Assignment buttons are arranged in
+two columns to retain table space. Recovery and unreservation require exact
+typed phrases; single unreservation has a bounded integer form, optionally
+prefilled from a local table row. It explicitly follows the original CLI's
+first-matching-exponent behavior across workers rather than promising AID or
+worker selection. Reference navigation continues to focus without execution.
+
+Operation parameters are structured, validated in both controller and helper,
+and serialized only into allowlisted arguments. Exponent zero, boolean/string
+values, extra parameters and parameters attached to scheduled mode are refused
+to prevent accidental fall-through into a normal work cycle. Recovery requires
+an existing computer GUID; single unreservation verifies the exponent is still
+present in current local work files before launch. Neither check confirms a
+remote reservation.
+
+`gui_assignment_backup.py` creates private, byte-exact work/certification
+snapshots before those four destructive commands. It handles worker directories,
+custom work filenames, PRPLL indexed files and missing originals. The manifest
+records original paths, backup names, hashes, sizes, operation and parameters.
+Inputs must be regular non-symlink files, at most 2 MiB each and 16 MiB combined;
+metadata checks reject concurrent changes, including changes detected after all
+reads. Incomplete snapshots are removed on failure and the CLI is not launched.
+The native instance lock protects preflight from another AutoPrimeNet instance;
+computation engines remain independently managed. Snapshots are point-in-time
+copies, not a transaction, and exclude result/proof/checkpoint/server state.
+Typed confirmations and GUI.md instruct users to pause affected engines and
+explain why copying files back cannot restore released reservations. There is
+no automatic restoration or reservation rollback.
+
+Validated October 25, 2026 on macOS/Python 3.15.1/Tk 9.1.0: **101 tests passed**,
+including sixteen desktop tests. Coverage includes backup contents/permissions,
+multiworker/PRPLL paths, missing files, unsafe/oversized/changing inputs, cleanup,
+launch prevention on snapshot failure, operation parameter bounds, registration
+and local-exponent preflight, typed confirmation cancellation and simulated
+launches. The actual Tk confirmation was displayed, checked against desktop
+dimensions and automatically cancelled. Two initial test failures were fixed by
+comparing resolved macOS `/var` and `/private/var` paths; the final full suite
+passes, including concurrent-change detection.
+
+The original CLI's pause/resume flags were also executed in disposable
+workspaces with socket operations blocked: they set/remove QuitGIMPS, retain work
+files and do not create a computer GUID. All recovery/unreservation command
+bodies remain simulated; no live reservation, result, SMTP or proof operation
+occurred. Original upstream files remain unchanged and no dependencies were
+added. Snapshot directories are ignored when generated in the checkout root.
+
+Live assignment-management validation, exponent registration, standalone
+computer registration, v6 ping, full debugging reports, immediate-watch lifecycle
+and other-platform runtime validation remain unfinished.
+
 ## Original-file changes
 
 None. All GUI work so far is in newly added files. Existing upstream source,
