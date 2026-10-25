@@ -4,8 +4,9 @@ This document records development evidence for the optional Python 3.15.0-or-lat
 GUI. See [GUI.md](GUI.md) for environment requirements and the agreed behavior.
 The complete GUI is not available yet; the desktop foundation now includes local
 configuration forms, encrypted password replacement, validated persistence,
-scheduled monitoring process control, confirmed one-shot commands and read-only previews. Live PrimeNet
-monitoring remains unvalidated.
+scheduled/one-shot process control, graphical computer/exponent registration,
+private reports and read-only previews. Live PrimeNet workflows remain
+unvalidated. [GUI_PARITY.md](GUI_PARITY.md) classifies every audited parser entry.
 
 ## Milestone: environment and offline backend prototype
 
@@ -55,6 +56,14 @@ It currently supports only:
   only selected ciphertext and the hardware GUID needed to retain its binding.
   It does not write files; the existing save layer patches and validates the
   result before atomic replacement.
+- `preview_registration`: supplies validated form answers to the original
+  exponent-registration function using in-memory files and no-op registration.
+  It returns canonical work lines without writing files or making a lookup.
+- `debug_report`: captures the original diagnostic function offline, redacts
+  configured passwords, and returns explicitly private report text. Export
+  requires a separate GUI confirmation and creates an owner-private local file.
+- `cli_help`: builds the original parser and returns its visible help without a
+  configuration or CLI startup. Capabilities also include the audited version.
 
 The source SHA-256 must exactly match the reviewed backend. Source drift fails
 closed before execution. An update to that guard requires a new integration
@@ -502,6 +511,102 @@ added. Snapshot directories are ignored when generated in the checkout root.
 Live assignment-management validation, exponent registration, standalone
 computer registration, v6 ping, full debugging reports, immediate-watch lifecycle
 and other-platform runtime validation remain unfinished.
+
+## Milestone: graphical registration, reporting and explicit parity inventory
+
+This broader checkpoint adds graphical exponent batches, standalone computer
+registration/update, v6 ping, original work-status reporting, bounded native-log
+viewing, private diagnostic export, original CLI help/version and update/output
+preferences. The Advanced reference now classifies all 96 audited parser entries
+and navigates worker/program/path controls as well as fields and operations.
+GUI_PARITY.md records Available, Partial, CLI-only and removed/hidden cases;
+parser-entry counts are explicitly not a claim of complete functional parity.
+
+### Source-based graphical registration
+
+`gui_registration_plan.py` validates bounded form data and supplies only reviewed
+answers to the original `register_exponents()` prompts. The offline preview uses
+that original function, `Assignment`, parser and formatter with an in-memory
+append target, virtual lock and no-op registration. It suppresses the optional
+mersenne.ca lookup because every input is explicit. Unexpected/repeated prompts
+fail instead of requesting terminal input. Original primality and cumulative
+known-factor divisibility checks are reused before execution. Resource limits
+are 100 entries, 48 KiB normalized data, 32 factors per entry and 1024-bit integer
+inputs/factors, with original type-specific ranges and finite numeric checks.
+
+`gui_registration_form.py` provides one-worker batches for all eight original
+work types, conditional fields, add/replace/remove, asynchronous offline preview,
+scrollable canonical lines and `REGISTER N` confirmation. Queued edits invalidate
+preview; reload/Quit protects queued rows; a closed dialog discards delayed
+results. Draft edits require Add/Replace before affecting the queue. Plans are
+in-memory only. A changed saved configuration requires another preview.
+
+`gui_registration.py` is a private live child. It checks the source hash and
+saved configuration fingerprint, executes the original startup up to its final
+main call, then binds validated graphical answers before invoking the original
+main function. Exponent registration follows the original append/register path,
+including registration of other unregistered tasks already in the selected
+worker's file. Computer registration skips the terminal setup initializer and
+uses main's setup-completion branch with saved settings, preserving the original
+computer/program-options routines without starting work retrieval or test email.
+No source file is patched and no PrimeNet API implementation is copied. Original
+startup retains logging, native locking, encryption and proxy initialization.
+
+The owned supervisor reruns offline registration preview and creates private
+work/certification snapshots before exponent registration, requires an existing
+computer GUID, and passes bounded plan data through stdin, not argv. It retains
+the readiness handshake, source/fingerprint guards and Stop/Force/Quit ownership.
+An explicit computer-registration action does not add a normal monitoring cycle.
+Automatic GPU selection and SMTP-provider discovery remain unfinished.
+
+### Reports, preferences and remaining limits
+
+`gui_reports.py` reads at most the latest 128 KiB/2000 lines from a regular,
+non-symlink configured native log into a separate private window. It does not
+copy native content into GUI activity. Native status uses the original `--status`
+command and writes its report to that log. Diagnostic export calls the original
+`debug_info` in the network-blocked bridge, returns at most 256 KiB, redacts
+configured passwords and exclusively creates a private `.gui-debug-report-*.txt`.
+The report still contains account/computer/hardware identifiers and is never
+uploaded automatically. Configuration staleness prevents export. Report files
+are ignored if generated in the checkout root.
+
+Added version-check enablement/channel, native console-color preference,
+large-prime result reporting policy and new-prime sound suppression, using
+existing INI semantics and offline save validation. The withholding policy's
+need for another notification method is stated in the form and guide. About uses
+the version literal from the hash-guarded source; CLI help builds the original
+parser offline without requiring a workspace.
+
+A disposable, network-blocked probe confirmed that the original CLI rejects
+UTF-8 BOM-prefixed configurations with exit 2/MissingSectionHeaderError. Local
+GUI editing continues to preserve BOM bytes; runner/live-adapter startup now
+fails before CLI execution with instructions to back up and save as UTF-8 without
+BOM. New GUI configurations already omit BOM. No upstream encoding change was
+made. The original GUI save preservation tests still apply.
+
+### Validation
+
+Validated October 25, 2026 on macOS/Python 3.15.1/Tk 9.1.0: **122 tests passed**,
+including nineteen desktop tests. New coverage checks all eight original work
+formats, known factors/residue modes, GPUOwl bounds, composite/invalid input,
+prompt drift, multiple queued rows, existing unregistered work, multiworker and
+PRPLL target files, stale configuration, stdin-only plans, supervisor snapshots,
+batch UI mutation/preview/cancellation/confirmation, private log isolation,
+diagnostic permissions/redaction/staleness, original help, version/preferences
+and explicit classification of every audited parser entry. Batch action controls
+were checked to remain within the rendered dialog.
+
+Isolated source executions use blocked sockets and simulated API responses. The
+real `register_instance`/`program_options` functions made only simulated `uc`/`po`
+transactions; the real exponent-registration flow appended and normalized work
+using simulated assignment replies. No live computer registration, assignment
+registration, v6 ping, result/proof operation or notification was performed.
+Original upstream files remain unchanged and no packages were added. Native
+watching/separate polling, disabling GUI locking, verbose HTTP tracing, automatic
+GPU/SMTP discovery, live validation and other-platform runtime testing remain
+open. See GUI_PARITY.md for exact coverage rather than treating this as release
+completion.
 
 ## Original-file changes
 
