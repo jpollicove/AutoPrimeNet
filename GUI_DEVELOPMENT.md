@@ -2,7 +2,7 @@
 
 This document records development evidence for the optional Python 3.15.0-or-later
 GUI. See [GUI.md](GUI.md) for environment requirements and the agreed behavior.
-The complete desktop GUI is not available yet.
+The complete GUI is not available yet; a read-only desktop foundation is runnable.
 
 ## Milestone: environment and offline backend prototype
 
@@ -95,8 +95,62 @@ directly.
 This is evidence for read-only helper reuse only. It does not establish correct
 configuration precedence, encryption, lock coordination, registration, selective
 server actions, process shutdown, or scheduler integration. Those require later
-tests before exposing them in the GUI. The next prototype should address Tk/tray
-event-loop integration and controlled backend initialization.
+tests before exposing them in the GUI.
+
+## Milestone: read-only desktop foundation and native tray helper
+
+The new `autoprimenet_gui.py` launcher provides eight tabs, directory/configuration
+selection, local identity/worker/disk/assignment previews, GUI activity, and a
+searchable CLI reference. `gui_config.py` reads bounded, case-sensitive snapshots
+without writing or decrypting. `gui_controller.py` serializes background jobs,
+uses timeout-bounded private backend requests, and owns the tray helper process.
+
+`gui_tray.py` uses pystray in a separate process to keep its native event loop
+independent of Tk. The optional dependency file resolves to pystray 0.19.5,
+Pillow 13.0.0, six 1.17.0 and PyObjC core/Cocoa/Quartz 12.2.2 on the development
+Mac. All were installed inside `.venv`. Runtime readiness is established before
+withdrawing the window; helper failure restores a hidden window. Taskbar/Dock
+minimization is the fallback. Linux/FreeBSD tray integration is not enabled yet.
+
+Validation on the same macOS/Python 3.15.1/Tk 9.1 environment:
+
+- 18 core tests passed: the previous 10, plus read-only configuration/worker
+  discovery, symlink conflict detection, PRPLL indexed files, exclusion of secret
+  settings from snapshots, invalid values/paths, bounded request size, job
+  serialization, and backend failure reporting.
+- Five opt-in real-desktop tests passed: tab navigation/search/workspace loading
+  and repeated refresh, tray hide/programmatic restore/helper failure recovery,
+  reachable taskbar/Dock fallback without tray support, clean shutdown of a healthy
+  tray helper, and macOS native Quit dispatch through application cleanup.
+- The user confirmed the requested manual macOS menu-bar test passed on October
+  24, 2026: closing the window, reopening it through the menu-bar icon, and Quit.
+  This supplements the programmatic event-delivery checks above.
+
+Run the desktop tests only in an accessible graphical session. On macOS:
+
+```sh
+AUTOPRIMENET_GUI_DESKTOP_TESTS=1 .venv/bin/python -B -m unittest discover -s tests -p 'test_gui_window.py' -v
+```
+
+On Windows PowerShell:
+
+```powershell
+$env:AUTOPRIMENET_GUI_DESKTOP_TESTS = '1'
+.\.venv\Scripts\python.exe -B -m unittest discover -s tests -p 'test_gui_window.py' -v
+Remove-Item Env:AUTOPRIMENET_GUI_DESKTOP_TESTS
+```
+
+The default suite skips desktop tests to avoid initializing Tk in headless or
+restricted sessions. The earlier crash report confirms SIGABRT during macOS
+application registration, with `TkMacOSXDisplayChanged` / `TkpOpenDisplay` in the
+stack. This is consistent with the restricted-session failure, not proof of a
+defect in application logic; subsequent desktop-access tests passed. Do not run
+graphical checks in the same restricted context that caused that abort.
+
+No monitoring, server mutation, notification delivery, configuration persistence,
+or engine management is available in this milestone. Full initialization parity,
+editable forms and process safety for an actual monitoring backend remain work
+for later milestones. No live PrimeNet operations were performed.
 
 ## Original-file changes
 
