@@ -4,7 +4,7 @@ This document records development evidence for the optional Python 3.15.0-or-lat
 GUI. See [GUI.md](GUI.md) for environment requirements and the agreed behavior.
 The complete GUI is not available yet; the desktop foundation now includes local
 configuration forms, encrypted password replacement, validated persistence,
-scheduled monitoring process control and read-only previews. Live PrimeNet
+scheduled monitoring process control, confirmed one-shot commands and read-only previews. Live PrimeNet
 monitoring remains unvalidated.
 
 ## Milestone: environment and offline backend prototype
@@ -411,6 +411,43 @@ existing encrypted credentials; SOCKS remains an optional Requests extra.
 Test-message sending, automatic SMTP discovery, per-event notification controls,
 standalone registration, selective server operations, immediate-watch lifecycle
 and other-platform runtime testing remain unfinished.
+
+## Milestone: confirmed one-shot CLI commands
+
+Added an allowlisted operation registry for normal PrimeNet ping, test email,
+result reporting and combined result/proof upload. Dedicated buttons live in
+PrimeNet, Notifications and Assignments. Each operation describes its effects
+and fixed CLI flags in a confirmation; unsaved/missing/mismatched workspace
+configuration prevents launch. CLI-reference navigation focuses the button and
+does not start an operation.
+
+The existing owned runner now executes one-shot commands with `--timeout 0`
+instead of entering its schedule. It performs the same source/fingerprint/
+offline checks, private configuration snapshot, readiness acknowledgement and
+shared locks. A single CLI invocation runs without the scheduled mode's initial
+registration follow-up. Test email additionally requires saved sender/server
+settings and notification sending enabled. No arbitrary argument field or
+interactive terminal is introduced.
+
+The GUI disables competing commands and edits while a command is active. Stop,
+Force, background hiding and asynchronous Quit reuse the existing ownership
+controls. Completion is reported as a local zero exit, with server acceptance
+and delivery unverified; detailed output remains in the original configured log.
+The snapshot protects only configuration, not server reservations, proof files
+or results changed by the original backend. GUI.md documents these effects.
+
+Validated October 25, 2026 on macOS/Python 3.15.1/Tk 9.1.0: **88 tests passed**,
+including fifteen desktop tests. New tests verify exact allowlisted/noninteractive
+argv, exactly-once execution without registration follow-up, startup cancellation,
+failure/force outcomes, real supervisor locking/backups/release, email preflight,
+confirmation cancellation, duplicate clicks, disabled controls, dirty-form
+rejection and reference navigation. All command bodies are mocked or simulated;
+no PrimeNet ping, SMTP message, result submission or proof upload was performed.
+Original upstream files remain unchanged and no dependencies were added.
+
+Live command validation, experimental v6 ping, full debugging reports,
+standalone registration, assignment recovery/unreservation, exponent registration,
+immediate-watch lifecycle and other-platform runtime testing remain unfinished.
 
 ## Original-file changes
 
