@@ -328,6 +328,39 @@ not encrypt plaintext passwords or replace the password for a changed SMTP
 account. Those limits are documented in GUI.md. Full operation coverage,
 immediate-watch lifecycle and other-platform validation remain future work.
 
+## Milestone: hardware and resource configuration
+
+Added eleven registration settings: processor model/features/frequency, total
+physical memory, maximum stage 2 memory, proof residue disk limit, L1/L2/L3
+cache sizes, physical cores and threads per core. They live in a scrollable
+dialog opened from PrimeNet and are mapped in the searchable CLI reference.
+The advanced assignment dialog and hardware dialog share the same staged
+Apply/Cancel implementation. A modal dialog cannot apply edits while monitoring,
+local operations or Quit are active.
+
+Blank fields preserve INI inheritance and the backend's automatic detection or
+defaults without materializing machine-specific values during an unrelated save.
+The case-sensitive `memory` and `Memory` options remain distinct. Save uses the
+original backend's type conversion and maximum-versus-total-memory check; the
+GUI also rejects malformed/nonfinite numeric input. Hardware-only edits preserve
+existing timing estimates, matching the absence of an upstream setup reset for
+these settings. No computation-program settings or system resource limits are
+changed by the forms.
+
+Validated October 25, 2026 on macOS/Python 3.15.1/Tk 9.1.0: **69 tests passed**,
+including eleven desktop tests. Added coverage includes all hardware fields,
+case-sensitive memory keys, no-op saves, clearing overrides, estimate retention,
+malformed input, backend memory conflicts, dialog cancellation, CLI-reference
+navigation and GUI save/reload. Existing advanced-dialog tests pass after reuse.
+No registration, hardware update, SMTP send or live PrimeNet cycle was performed.
+Original upstream files remain unchanged; no dependencies were added.
+
+Detected-hardware preview, automatic GPU selection, standalone graphical
+registration, credential editing, selective server operations, immediate-watch
+lifecycle and other-platform validation remain unfinished. GUI.md documents
+units, detected/default behavior and the distinction between reported resource
+settings and actual computation-program configuration.
+
 ## Original-file changes
 
 None. All GUI work so far is in newly added files. Existing upstream source,
