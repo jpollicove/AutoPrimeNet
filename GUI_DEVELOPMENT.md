@@ -2,7 +2,8 @@
 
 This document records development evidence for the optional Python 3.15.0-or-later
 GUI. See [GUI.md](GUI.md) for environment requirements and the agreed behavior.
-The complete GUI is not available yet; a read-only desktop foundation is runnable.
+The complete GUI is not available yet; the desktop foundation now includes local
+configuration forms and validated persistence as well as read-only previews.
 
 ## Milestone: environment and offline backend prototype
 
@@ -43,6 +44,10 @@ It currently supports only:
 - `parse_work`: executes the reviewed upstream definition prefix in a private
   namespace, then reuses `parse_assignment()` and `output_assignment()` to inspect
   supplied work lines. It does not open the user's work files.
+- `validate_config`: initializes the existing argument parser and merges proposed
+  configuration text in memory, reuses decryption and `check_options()`, and
+  returns only non-secret effective settings. It does not write configuration,
+  acquire locks, run prompted setup, register the computer or enter the scheduler.
 
 The source SHA-256 must exactly match the reviewed backend. Source drift fails
 closed before execution. An update to that guard requires a new integration
@@ -50,9 +55,10 @@ review, not just replacing the hash. No copy of the PrimeNet parser, serializer,
 or API implementation is maintained by the bridge.
 
 The executed prefix initializes native capabilities, locale, and an HTTP session;
-it is therefore isolated from the Tk process. The CLI parser/startup block,
-configuration loading, instance lock, file logger, prompted setup, and scheduler
-are not executed. The bridge explicitly closes its session after parsing.
+it is therefore isolated from the Tk process. Normal CLI startup, disk-based
+configuration loading, instance locking, file logging, prompted setup and the
+scheduler are not executed. Configuration validation initializes the parser and
+configuration in memory only. The bridge explicitly closes its session afterward.
 
 Python socket audit guards deny DNS resolution, connections, and datagram sends
 for these offline operations. This is a precaution around trusted, hash-checked
@@ -92,7 +98,7 @@ repository does not require a committed VSCode settings file. The commands above
 also work without activating the environment because they use its executable
 directly.
 
-This is evidence for read-only helper reuse only. It does not establish correct
+The initial milestone was evidence for read-only helper reuse only. It did not establish correct
 configuration precedence, encryption, lock coordination, registration, selective
 server actions, process shutdown, or scheduler integration. Those require later
 tests before exposing them in the GUI.
@@ -151,6 +157,61 @@ No monitoring, server mutation, notification delivery, configuration persistence
 or engine management is available in this milestone. Full initialization parity,
 editable forms and process safety for an actual monitoring backend remain work
 for later milestones. No live PrimeNet operations were performed.
+
+## Milestone: configuration forms, safe persistence and offline initialization
+
+Validated October 25, 2026 on macOS with Python 3.15.1 and Tk 9.1.0: **46 tests
+passed**, comprising 39 core tests and seven opt-in desktop tests. No tests were
+skipped in that combined desktop-enabled run. The dependency check also passed.
+No new dependencies were required for this milestone.
+
+`gui_options.py` defines typed metadata for the first fourteen configuration
+fields. `gui_forms.py` presents them in the main tabs and adds program selection,
+worker-count editing and a per-worker dialog. Saving is an explicit user action;
+unsaved changes can be retained when cancelling reload or Quit. Forms and path
+selectors are disabled during background operations to prevent competing edits.
+
+`gui_config.py` now retains a loaded version fingerprint and patches only changed
+single-line keys. It preserves comments, BOM/CRLF, unknown keys/sections,
+untouched interpolation and ciphertext. New literals escape percent signs. It
+uses the CLI-compatible instance lock, checks for external edits, writes a
+private backup, flushes a same-directory temporary file, and atomically replaces
+the target. Read-only/symbolic-link targets and known live-data filename conflicts
+are refused. No-op saves preserve exact bytes without a backup. Old worker
+sections remain when reducing the active count; program/hours changes reset the
+same cached estimate keys as setup.
+
+Offline validation executes the reviewed source's parser declarations and reuses
+`merge_config_and_options()`, `decrypt()` and `check_options()`. It resolves
+program-dependent defaults and support sets without running the CLI startup
+block or scheduler. Python 3.15's lazy-import bindings required using the bridge's
+standard-library ConfigParser rather than directly calling a potentially
+unresolved dictionary binding. The audited upstream source itself was unchanged.
+
+New verification covers:
+
+- Effective defaults for all eight computation programs, and comparison of
+  key effective values with the normal CLI's status path in a disposable
+  workspace under a network-blocking audit hook.
+- Real upstream OpenSSL encryption/decryption using a synthetic proxy password;
+  an unrelated edit retains ciphertext and the original backup without storing
+  the decrypted value. A separate fake-ciphertext formatting test mocks validation
+  explicitly and is not counted as evidence of decryption.
+- Initial creation, private-file modes, backups, comments/unknown/multiline
+  preservation, literal percent paths, multiple workers and preferences,
+  external edits (including restored mtime), lock contention, read-only files,
+  failed replacement, temp cleanup, invalid input and engine-change resets.
+- Real Tk interaction through the application methods for invalid input,
+  successful save/reload, unsaved-change cancellation, and all prior tray tests.
+
+The atomic rename is not a compare-and-swap against unrelated editors that ignore
+the shared lock. Avoid concurrent writers; narrow races with such editors remain
+possible after the final version check. Extended ACL/xattr preservation, network
+filesystems, Windows/FreeBSD/Linux execution and Python 3.15.0 runtime validation
+remain untested. Multiline values being edited are deliberately refused. Full
+credential editing, registration, network initialization/proxy setup, monitoring,
+selective server operations, notifications and complete graphical parity remain
+later work. No live PrimeNet operations or real assignment changes occurred.
 
 ## Original-file changes
 
