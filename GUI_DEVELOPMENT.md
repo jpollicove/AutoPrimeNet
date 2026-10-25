@@ -673,6 +673,62 @@ tests**, on macOS/Python 3.15.1/Tk 9.1. Dependency checks and `git diff --check`
 passed. Manual and live-service testing remain pending. Quit during a bounded
 lookup asks the user to retry after it finishes, matching existing job handling.
 
+## Native monitoring cadence, file watching and graceful worker shutdown
+
+Positive polling intervals now run a continuous owned native scheduler through
+`gui_runtime.py`. The original `main` still controls check-ins, work requests,
+certification, rolling averages, native watchers, proof handling and notifications.
+`--timeout` is passed explicitly from `[GUI] PollSeconds`, since upstream does not
+persist that CLI option. The original `[PrimeNet] watch` preference is editable.
+Zero performs one complete pass (including new-registration follow-up if needed).
+The Dashboard and native tray show Watching files between polling passes, and
+tray Stop remains enabled in that state. Settings are reachable from the CLI
+reference, typed, validated offline and saved through the existing preservation
+path. Default polling remains 3600 seconds and default watching is enabled.
+
+The original source is not edited. The source-hash guard and exact AST-layout
+checks permit narrowly scoped in-memory hooks: replace the scheduler's outer
+counter with a stop-aware iterator, make scheduler/retry cooldown waits wakeable,
+and register report/upload threads before starting them. The original one-second
+result-read and 60-second proof-upload ordering delays are preserved. Stop drops
+new queue submissions, exits idle queue consumers, lets active work/batches finish,
+and joins every report/upload worker before the child exits. Pending names are
+not a durable job queue; unchanged source result/proof files are scanned on restart.
+Native watcher threads remain daemon threads and only enqueue names; their handles
+close at process exit. Watcher/report/upload failures stop the scheduler, record a
+private native-log exception and drain active writers before returning failure.
+
+The supervisor retains preflight cancellation and its ready/begin handshake,
+passes a config hash to the native child, forwards Stop/parent EOF, and handles
+explicit force by terminating/reaping only that child. One-shot operations keep
+their existing execution path. A cycle-completed event marks local scheduling
+work, not completion or server acceptance of asynchronous uploads. No computation
+engine is started/stopped, no upstream CLI behavior is changed on disk, and no
+packages were added.
+
+Validation includes two actual original scheduler polls with simulated server
+functions and blocked sockets: the first checked in and the second did not.
+The original macOS FSEvents watcher delivered a real temporary results-file
+change to the original reporting worker; all reporting/upload threads exited
+before the adapter returned. The test retains original result-read ordering and
+skips only the five-minute cooldown to keep runtime bounded. macOS FSEvents
+cannot start within this sandbox, so that native integration test joins the
+explicitly enabled, unsandboxed desktop run. Other platforms remain pending.
+Additional tests cover source-layout rejection, queue stop/wakeup, active-worker
+draining, worker failures, Stop during preflight, zero-interval single-pass,
+Stop forwarding, owned-only force termination, saved polling/watch preferences,
+invalid intervals, reference navigation and desktop editing/saving. No live
+PrimeNet, provider, SMTP, result submission or proof upload was performed.
+
+Manual acceptance remains deferred until implementation is ready. Remaining
+runtime parity gaps are lock bypass and verbose HTTP tracing; platform/live
+acceptance remains separate from the implemented feature inventory.
+
+Final automated verification: **148 tests passed**, including **24 desktop tests**
+and the native macOS FSEvents integration test, on Python 3.15.1/Tk 9.1.
+Dependency checks and `git diff --check` passed. Original-file diffs against
+the audited baseline remain empty.
+
 ## Original-file changes
 
 None. All GUI work so far is in newly added files. Existing upstream source,
