@@ -3,7 +3,8 @@
 This document records development evidence for the optional Python 3.15.0-or-later
 GUI. See [GUI.md](GUI.md) for environment requirements and the agreed behavior.
 The complete GUI is not available yet; the desktop foundation now includes local
-configuration forms and validated persistence as well as read-only previews.
+configuration forms, validated persistence, scheduled monitoring process control,
+and read-only previews. Live PrimeNet monitoring remains unvalidated.
 
 ## Milestone: environment and offline backend prototype
 
@@ -212,6 +213,64 @@ remain untested. Multiline values being edited are deliberately refused. Full
 credential editing, registration, network initialization/proxy setup, monitoring,
 selective server operations, notifications and complete graphical parity remain
 later work. No live PrimeNet operations or real assignment changes occurred.
+
+## Milestone: scheduled monitoring lifecycle
+
+Validated October 25, 2026 on the same macOS/Python 3.15.1/Tk 9.1.0 environment:
+**59 tests passed**, comprising 51 core tests and eight real-desktop tests. All
+monitoring cycles in these tests are simulated or replaced with owned sleeping
+test children; no live PrimeNet cycle, assignment change or notification send was
+performed. The older CLI status comparison remains network-blocked.
+
+`gui_monitor.py` is a private scheduled runner. It validates the selected
+configuration offline, holds `~gui-monitor.lock`, and runs unmodified CLI passes
+with `--timeout 0` at the configured check-in interval. This avoids leaving
+daemon proof/result workers active when stopping at a cycle boundary. It is a
+scheduled mode only, not implementation of native immediate file watching or
+independent polling/check-in cadences. A completed initial registration can be
+followed by a normal work pass; tests verify this glue with stubbed subprocesses,
+not real registration.
+
+Each Start preserves a private, byte-for-byte configuration backup before the
+CLI can normalize the file. Tests verify the backup contents and POSIX private
+file permissions. This backup does not undo server operations or checkpoints.
+
+`MonitorController` owns the helper process, serialized control writes, lifecycle
+events and restart generations. A ready/begin handshake prevents a Stop during
+offline preflight from starting a server cycle afterward. The helper reads control
+commands without buffered stdin read-ahead or buffered-reader shutdown locks.
+Parent-pipe EOF requests a graceful stop. A confirmed force-stop command targets
+only the CLI child created by this helper. No process discovery, arbitrary PID
+killing, unreservation, or automatic stale-lock removal is implemented.
+
+Dashboard Start/Stop/Force controls are integrated with tray state and start/stop
+menu actions. Closing retains the GUI/runner; confirmed Quit waits asynchronously
+for shutdown. Settings/path editing is disabled while monitoring, and the save
+layer independently checks the runner lock. The CLI's native lock protects every
+pass against independent CLI processes; the GUI-only lock does not prevent an
+independent CLI from starting during a scheduled idle interval. A subsequent
+native lock conflict stops the runner rather than killing the foreign process.
+
+New tests cover duplicate starts/runners, native lock conflicts, changed config,
+save exclusion, startup cancellation, idle/running-cycle Stop, parent EOF,
+nonzero-cycle failure, initialization follow-up, private argv, and forced stopping
+of an owned test child while an unrelated test process remains alive. The real
+desktop test hides the window to the actual macOS menu-bar helper while a
+simulated runner remains active, then tests cancelled and confirmed Quit.
+
+Tray state updates/activation/shutdown now use PyObjC's native main-thread
+dispatch on macOS; the Tk event loop remains in the GUI process. No new package
+dependencies were needed. Native menu clicks for the new Start/Stop actions have
+not been manually tested, and Windows/Linux/FreeBSD and Python 3.15.0 runtime
+validation remain pending.
+
+CLI stdout/stderr is not streamed into the GUI, avoiding pipe backpressure and
+credential exposure. Detailed diagnostics remain in the existing rotating CLI
+log; GUI cycle events are bounded and explicitly do not confirm server acceptance.
+Long uploads, retries, or stale sidecar locks can delay graceful Stop. Force-stop
+risks and scheduled-mode limitations are documented in GUI.md. The next work is
+complete graphical operation coverage, immediate-watch lifecycle and safe live
+validation after review; this milestone does not establish full parity.
 
 ## Original-file changes
 
